@@ -27,9 +27,9 @@ where photos.id is NULL;
 
 select 
 	username,
-    photos.id,
+    	photos.id,
 	photos.image_url, 
-    count(*) as number_of_likes
+    	count(*) as number_of_likes
 from photos
 inner join likes
 	on likes.photo_id = photos.id
