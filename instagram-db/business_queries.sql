@@ -27,9 +27,9 @@ where photos.id is NULL;
 
 select 
 	username,
-    	photos.id,
+    photos.id,
 	photos.image_url, 
-    	count(*) as number_of_likes
+    count(*) as number_of_likes
 from photos
 inner join likes
 	on likes.photo_id = photos.id
@@ -38,3 +38,31 @@ inner join users
 group by photos.id
 order by number_of_likes desc
 limit 1;
+
+-- How many times does the average user post?
+select
+	(select count(*) from photos) / (select count(*) from users) as avg_posts;
+    
+-- Top 5 most commonly used hashtags
+
+select
+	tags.tag_name,
+    count(*) as total
+from photo_tags
+join tags
+	on tags.id = photo_tags.tag_id
+group by tags.id
+order by total desc
+limit 5;
+
+-- Dealing with bot accounts: Users who liked every photo
+
+select
+	username,
+    user_id,
+    count(*) as total_likes
+from users
+inner join likes
+	on users.id = likes.user_id
+group by likes.user_id
+having total_likes = (select count(*) from photos);
