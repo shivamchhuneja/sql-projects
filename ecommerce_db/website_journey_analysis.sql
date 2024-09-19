@@ -60,3 +60,45 @@ from first_pv_per_session
 	left join website_pageviews
 		on first_pv_per_session.first_pv = website_pageviews.website_pageview_id
 group by website_pageviews.pageview_url;
+
+-- Landing page analysis: bounce rate
+
+-- Steps: Find the first pageview id for relevant sessions
+-- Then identify the landing page for each session
+-- Then count pageviews for each session to get to "bounces"
+-- Count total sessions and bounced sessions for bounce rate
+
+create temporary table first_pageviews
+select
+	website_session_id,
+    min(website_pageview_id) as min_pageview_id
+from website_pageviews
+where created_at < '2012-06-14'
+group by
+	website_session_id;
+    
+create temporary table sessions_w_home_landing_page
+select
+	first_pageviews.website_session_id,
+    website_pageviews.pageview_url as landing_page
+from first_pageviews
+	left join website_pageviews
+		on website_pageviews.website_pageview_id = first_pageviews.min_pageview_id
+where website_pageviews.pageview_url = '/home';
+
+create temporary table bounced_sessions
+select
+	sessions_w_home_landing_page.website_session_id,
+    sessions_w_home_landing_page.landing_page,
+    count(website_pageviews.website_pageview_id) as count_of_pages_viewed
+from sessions_w_home_landing_page
+left join website_pageviews
+	on website_pageviews.website_session_id = sessions_w_home_landing_page.website_session_id
+
+group by
+	sessions_w_home_landing_page.website_session_id,
+    sessions_w_home_landing_page.landing_page
+
+having
+	count(website_pageviews.website_pageview_id) = 1;
+
